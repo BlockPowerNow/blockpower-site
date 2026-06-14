@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Block Power -- Build power, one block at a time</title>
+<meta name="description" content="Block Power turns the most reliable voters in a neighborhood into the people who turn out everyone else. Precinct captains, real maps, measured results -- building Black political power block by block." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f6efe0;
+    --paper-2: #efe5d2;
+    --ink: #181410;
+    --ink-soft: #463d33;
+    --power: #df3b29;        /* organizing vermilion */
+    --power-deep: #b22a1c;
+    --green: #15453a;        /* rootedness */
+    --green-soft: #1f5e4f;
+    --gold: #e0a02e;
+    --line: #d6c8ad;
+    --max: 1180px;
+    --r: 4px;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Libre Franklin", system-ui, sans-serif;
+    font-size: 20px;            /* large base for low-vision legibility */
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* paper grain */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.05;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  a { color: inherit; }
+  img, svg { max-width: 100%; }
+
+  .wrap { width: min(var(--max), 92vw); margin: 0 auto; position: relative; z-index: 2; }
+
+  .micro {
+    font-size: 0.82rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--power-deep);
+  }
+
+  h1, h2, h3 { font-family: "Fraunces", Georgia, serif; line-height: 1.02; margin: 0; }
+  h2 { font-size: clamp(2.2rem, 5.2vw, 4rem); font-weight: 900; letter-spacing: -0.02em; }
+  h3 { font-size: clamp(1.4rem, 2.6vw, 1.95rem); font-weight: 600; }
+  p { margin: 0 0 1.1em; max-width: 64ch; }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.55em;
+    font-family: "Libre Franklin", sans-serif;
+    font-weight: 700; font-size: 1.02rem;
+    text-decoration: none;
+    padding: 0.85em 1.5em;
+    border-radius: var(--r);
+    border: 2.5px solid var(--ink);
+    transition: transform .15s ease, box-shadow .15s ease, background .2s ease, color .2s ease;
+    box-shadow: 5px 5px 0 var(--ink);
+    background: var(--power); color: #fff; border-color: var(--ink);
+  }
+  .btn:hover { transform: translate(-2px,-2px); box-shadow: 8px 8px 0 var(--ink); }
+  .btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--ink); }
+  .btn.ghost { background: transparent; color: var(--ink); }
+  .btn.ghost:hover { background: var(--ink); color: var(--paper); }
+  .btn .arrow { font-family: serif; }
+
+  /* ---------- nav ---------- */
+  header.nav {
+    position: sticky; top: 0; z-index: 40;
+    background: rgba(246,239,224,0.86);
+    backdrop-filter: blur(8px);
+    border-bottom: 2px solid var(--ink);
+  }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0; }
+  .brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; font-weight: 800; }
+  .brand .mark {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--power); border: 2.5px solid var(--ink);
+    display: grid; place-items: center; color: #fff; font-family: "Fraunces", serif; font-weight: 900;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .brand .name { font-family: "Fraunces", serif; font-weight: 900; font-size: 1.35rem; letter-spacing: -0.01em; }
+  .nav-links { display: flex; align-items: center; gap: 1.6rem; }
+  .nav-links a { text-decoration: none; font-weight: 600; font-size: 1rem; }
+  .nav-links a.text:hover { color: var(--power-deep); }
+  .nav-toggle { display: none; background: none; border: 2.5px solid var(--ink); border-radius: var(--r); font-size: 1.2rem; padding: .3em .55em; cursor: pointer; }
+
+  /* ---------- hero ---------- */
+  .hero { position: relative; padding: clamp(3.5rem, 9vw, 7.5rem) 0 clamp(3rem,6vw,5rem); overflow: hidden; }
+  .hero .blob {
+    position: absolute; z-index: 0; border-radius: 50%; filter: blur(2px);
+    opacity: .9;
+  }
+  .hero .b1 { width: 520px; height: 520px; right: -180px; top: -120px; background: radial-gradient(circle at 30% 30%, var(--gold), transparent 62%); opacity:.55; }
+  .hero .b2 { width: 460px; height: 460px; left: -200px; bottom: -160px; background: radial-gradient(circle at 60% 40%, var(--green-soft), transparent 64%); opacity:.4; }
+
+  .eyebrow { display:inline-flex; align-items:center; gap:.6em; margin-bottom: 1.3rem; }
+  .eyebrow .dot { width:.7em; height:.7em; border-radius:50%; background:var(--power); box-shadow:0 0 0 4px rgba(223,59,41,.18); }
+
+  .hero h1 {
+    font-size: clamp(2.9rem, 8.2vw, 6.6rem);
+    font-weight: 900; letter-spacing: -0.035em; line-height: 0.94;
+    max-width: 16ch;
+  }
+  .hero h1 em { font-style: italic; color: var(--power); }
+  .hero .lede { font-size: clamp(1.15rem, 2.1vw, 1.5rem); color: var(--ink-soft); max-width: 50ch; margin-top: 1.6rem; }
+  .hero .cta-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2.2rem; }
+
+  .hero-stats { display: flex; flex-wrap: wrap; gap: 2.4rem; margin-top: 3.4rem; padding-top: 2rem; border-top: 2px solid var(--line); }
+  .stat .num { font-family: "Fraunces", serif; font-weight: 900; font-size: clamp(2.2rem,4vw,3.1rem); line-height: 1; color: var(--green); }
+  .stat .lab { font-size: .98rem; color: var(--ink-soft); max-width: 22ch; margin-top: .4rem; }
+
+  /* reveal animation */
+  .rise { opacity: 0; transform: translateY(26px); }
+  .show .rise, .hero .rise { animation: rise .8s cubic-bezier(.2,.7,.2,1) forwards; }
+  .hero .rise { opacity: 0; }
+  .d1{animation-delay:.05s} .d2{animation-delay:.18s} .d3{animation-delay:.32s}
+  .d4{animation-delay:.46s} .d5{animation-delay:.6s} .d6{animation-delay:.74s}
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce){ .rise{opacity:1!important;transform:none!important;animation:none!important} }
+
+  /* ---------- sections ---------- */
+  section { padding: clamp(3.5rem, 8vw, 6.5rem) 0; position: relative; }
+  .sec-head { max-width: 60ch; margin-bottom: 2.6rem; }
+  .sec-head .micro { display:block; margin-bottom: .9rem; }
+
+  .dark { background: var(--ink); color: var(--paper); }
+  .dark .micro { color: var(--gold); }
+  .dark h2 { color: var(--paper); }
+  .dark p { color: #d8cdb9; }
+  .dark .stat .num { color: var(--gold); }
+
+  .green-sec { background: var(--green); color: var(--paper); }
+  .green-sec .micro { color: var(--gold); }
+  .green-sec h2, .green-sec h3 { color: #fff; }
+  .green-sec p { color: #d6e4dd; }
+
+  /* gap stats band */
+  .bigfacts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2.5rem; }
+  .fact { border: 2px solid rgba(255,255,255,.22); border-radius: 6px; padding: 1.6rem 1.4rem; background: rgba(255,255,255,.03); }
+  .fact .n { font-family:"Fraunces",serif; font-weight:900; font-size: clamp(2.4rem,5vw,3.4rem); color: var(--gold); line-height:1; }
+  .fact .t { margin-top:.6rem; font-size:1rem; }
+
+  /* steps */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.3rem; }
+  .step { background: var(--paper); border: 2.5px solid var(--ink); border-radius: 6px; padding: 1.6rem 1.4rem; box-shadow: 6px 6px 0 var(--ink); }
+  .step .k { font-family:"Fraunces",serif; font-weight:900; font-size: 2.6rem; color: var(--power); line-height: 1; }
+  .step h3 { margin: .5rem 0 .5rem; color: var(--ink); }
+  .step p { font-size: .98rem; color: var(--ink-soft); margin: 0; }
+
+  /* map keystone */
+  .keystone { display: grid; grid-template-columns: 1.05fr .95fr; gap: 3rem; align-items: center; }
+  .map-card { background: var(--paper); border: 2.5px solid var(--ink); border-radius: 8px; box-shadow: 10px 10px 0 var(--ink); padding: 1rem; }
+  .map-legend { display:flex; gap:1.4rem; flex-wrap:wrap; margin-top:.7rem; padding:.2rem .6rem .5rem; font-size:.9rem; color:var(--ink-soft); }
+  .lg { display:inline-flex; align-items:center; gap:.45em; }
+  .swatch{ width:.95em;height:.95em;border-radius:50%; border:1.5px solid var(--ink);}
+
+  /* pillars */
+  .pillars { display:grid; grid-template-columns: repeat(3,1fr); gap:1.5rem; }
+  .pillar { padding:1.8rem 1.6rem; border-radius:8px; border:2.5px solid var(--ink); background:var(--paper); }
+  .pillar .ic { font-family:"Fraunces",serif; font-weight:900; font-size:1.1rem; letter-spacing:.18em; text-transform:uppercase; color:var(--power-deep); }
+  .pillar h3{ margin:.5rem 0 .6rem; color: var(--ink);}
+  .pillar p{ font-size:1rem; color:var(--ink-soft); margin:0;}
+
+  /* involve cards */
+  .involve { display:grid; grid-template-columns: repeat(3,1fr); gap:1.5rem; }
+  .card { border:2.5px solid var(--paper); border-radius:8px; padding:2rem 1.7rem; background: rgba(255,255,255,.04); display:flex; flex-direction:column; }
+  .card h3{ margin-bottom:.5rem;}
+  .card p{ flex:1; font-size:1rem;}
+  .card .btn{ align-self:flex-start; margin-top:.6rem; }
+
+  blockquote.pull {
+    font-family:"Fraunces",serif; font-weight:500; font-style:italic;
+    font-size: clamp(1.5rem,3.4vw,2.4rem); line-height:1.22; letter-spacing:-.01em;
+    max-width: 22ch; margin:0; color: var(--ink);
+    border-left: 6px solid var(--power); padding-left: 1.2rem;
+  }
+  .dark blockquote.pull { color: var(--paper); }
+
+  /* footer */
+  footer { background: var(--ink); color: var(--paper); padding: 3.5rem 0 2.5rem; }
+  .foot-grid { display:flex; flex-wrap:wrap; justify-content:space-between; gap:2rem; align-items:flex-start; }
+  footer a { color: #d8cdb9; text-decoration: none; }
+  footer a:hover { color: var(--gold); }
+  .foot-links { display:flex; gap:1.4rem; flex-wrap:wrap; }
+  .legal { margin-top:2.4rem; padding-top:1.6rem; border-top:1px solid rgba(255,255,255,.18); font-size:.85rem; color:#a99e8c; max-width: 80ch; }
+
+  /* responsive */
+  @media (max-width: 900px){
+    .steps{ grid-template-columns: repeat(2,1fr);}
+    .bigfacts{ grid-template-columns:1fr; }
+    .keystone{ grid-template-columns:1fr; gap:2rem;}
+    .pillars, .involve{ grid-template-columns:1fr;}
+  }
+  @media (max-width: 680px){
+    body{ font-size:19px;}
+    .nav-links{ position:absolute; top:100%; right:0; left:0; flex-direction:column; align-items:flex-start;
+      gap:1rem; background:var(--paper); border-bottom:2px solid var(--ink); padding:1.2rem 4vw; display:none;}
+    .nav-links.open{ display:flex;}
+    .nav-links .btn{ width:100%; justify-content:center;}
+    .nav-toggle{ display:block;}
+    .hero-stats{ gap:1.6rem;}
+    .steps{ grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top" aria-label="Block Power home">
+      <span class="mark">B</span>
+      <span class="name">Block&nbsp;Power</span>
+    </a>
+    <button class="nav-toggle" aria-label="Menu" onclick="document.getElementById('navlinks').classList.toggle('open')">☰</button>
+    <nav class="nav-links" id="navlinks">
+      <a class="text" href="#how">How it works</a>
+      <a class="text" href="#proof">Proof</a>
+      <a class="text" href="#power">Health, wealth, power</a>
+      <a class="text" href="#join">Get involved</a>
+      <a class="btn" href="#join">Become a captain <span class="arrow">→</span></a>
+    </nav>
+  </div>
+</header>
+
+<a id="top"></a>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero">
+  <span class="blob b1"></span>
+  <span class="blob b2"></span>
+  <div class="wrap">
+    <span class="eyebrow rise d1"><span class="dot"></span><span class="micro">Black political power · built block by block</span></span>
+    <h1 class="rise d2">When our neighbors <em>vote</em>, our communities <em>win</em>.</h1>
+    <p class="lede rise d3">Block Power turns the most reliable voters on a street into the people who turn out everyone else. Real maps, trusted neighbors, measured results -- the cheapest way there is to build progressive power where it counts.</p>
+    <div class="cta-row rise d4">
+      <a class="btn" href="#join">Become a precinct captain <span class="arrow">→</span></a>
+      <a class="btn ghost" href="#fund">Fund the work</a>
+    </div>
+
+    <div class="hero-stats rise d5">
+      <div class="stat"><div class="num">1,597</div><div class="lab">registered neighbors in a single precinct who sat out the last elections</div></div>
+      <div class="stat"><div class="num">$0</div><div class="lab">to find the trusted messenger -- they're already in the voter file</div></div>
+      <div class="stat"><div class="num">100</div><div class="lab">North Carolina counties this model is built to reach, by mail</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== THE GAP (dark) ===================== -->
+<section class="dark" id="gap">
+  <div class="wrap reveal">
+    <div class="sec-head rise">
+      <span class="micro">The gap costs us elections</span>
+      <h2>The votes are already registered. Nobody close to them ever asked.</h2>
+    </div>
+    <p class="rise">Across the majority-Black precincts of eastern North Carolina, thousands of people are registered and active but stay home in most elections. They are not unregistered. They do not need paperwork. They need a neighbor they trust to make it personal -- and the other side is counting on that neighbor never showing up.</p>
+    <p class="rise">When these voters stay home, our communities lose the school board, the county commission, the sheriff, the seats that decide whether a neighborhood gets paved roads or gets ignored. Turning them out is the highest-leverage move in progressive politics, and it is the one paid campaigns are worst at.</p>
+    <div class="bigfacts">
+      <div class="fact rise d1"><div class="n">1,597</div><div class="t">registered-but-not-voting neighbors in Roanoke Rapids 7-9 alone (Halifax County)</div></div>
+      <div class="fact rise d2"><div class="n">777</div><div class="t">in Weldon 3 -- a precinct so under-mobilized it has almost no super-voters left to lead it</div></div>
+      <div class="fact rise d3"><div class="n">5-8%</div><div class="t">turnout lift when a trusted neighbor helps someone make a real plan to vote</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== INSIGHT ===================== -->
+<section id="insight">
+  <div class="wrap reveal">
+    <div class="keystone">
+      <div class="rise">
+        <span class="micro">The insight</span>
+        <h2 style="margin:.7rem 0 1.3rem;">The best organizer on a block already lives there.</h2>
+        <p>The most trusted messenger in any precinct is the person who already votes in every election -- the super-voter. They are free to find, because they are sitting in the public voter file, and they carry standing that no out-of-town canvasser ever will.</p>
+        <p>Block Power finds those people, hands them a map of exactly which neighbors didn't vote, and gives them a simple way to change that. We manufacture the most effective thing in get-out-the-vote -- a trusted person, face to face -- at the scale of a whole state.</p>
+      </div>
+      <blockquote class="pull rise d2">Five real conversations beats fifty doors.</blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<section class="green-sec" id="how">
+  <div class="wrap reveal">
+    <div class="sec-head rise">
+      <span class="micro">How it works</span>
+      <h2>One engine. Four steps. Any scale.</h2>
+    </div>
+    <div class="steps">
+      <div class="step rise d1"><div class="k">01</div><h3>Recruit</h3><p>We mail super-voters in target precincts and ask them to lead their own block. No staff in every county -- just a postcard and a yes.</p></div>
+      <div class="step rise d2"><div class="k">02</div><h3>Equip</h3><p>Each captain gets a Strategy Pack: a large-format map of their precinct showing the exact neighbors who stayed home, plus a one-page play.</p></div>
+      <div class="step rise d3"><div class="k">03</div><h3>Multiply</h3><p>Captains reach a handful of neighbors and help each make a voting plan. The app lets them and their friends do the same -- points, a leaderboard, no pay.</p></div>
+      <div class="step rise d4"><div class="k">04</div><h3>Measure</h3><p>We compare turnout against matched control precincts and pull the voter file after the election. Every dollar traces to votes that weren't there before.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MAP KEYSTONE ===================== -->
+<section id="map">
+  <div class="wrap reveal">
+    <div class="keystone">
+      <div class="map-card rise">
+        <svg viewBox="0 0 520 400" role="img" aria-label="Sample precinct map showing the captain's home as a star and neighbors who did not vote as colored dots">
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M40 0H0V40" fill="none" stroke="#e3d6ba" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="520" height="400" fill="#f1e7d2"/>
+          <rect width="520" height="400" fill="url(#grid)"/>
+          <!-- streets -->
+          <g stroke="#cdbb98" stroke-width="9" stroke-linecap="round">
+            <line x1="40" y1="120" x2="490" y2="95"/>
+            <line x1="60" y1="250" x2="470" y2="270"/>
+            <line x1="150" y1="40" x2="180" y2="370"/>
+            <line x1="330" y1="30" x2="360" y2="380"/>
+          </g>
+          <!-- tier 1 (never voted) -->
+          <g fill="#df3b29" stroke="#181410" stroke-width="2">
+            <circle cx="110" cy="90" r="9"/><circle cx="220" cy="150" r="9"/>
+            <circle cx="300" cy="110" r="9"/><circle cx="390" cy="200" r="9"/>
+            <circle cx="135" cy="300" r="9"/><circle cx="410" cy="305" r="9"/>
+            <circle cx="250" cy="320" r="9"/><circle cx="455" cy="140" r="9"/>
+          </g>
+          <!-- tier 2 (presidential only) -->
+          <g fill="#15453a" stroke="#181410" stroke-width="2">
+            <circle cx="180" cy="200" r="8"/><circle cx="280" cy="240" r="8"/>
+            <circle cx="350" cy="160" r="8"/><circle cx="200" cy="100" r="8"/>
+            <circle cx="430" cy="240" r="8"/><circle cx="320" cy="320" r="8"/>
+          </g>
+          <!-- captain star -->
+          <g transform="translate(255,205)">
+            <circle r="22" fill="#e0a02e" stroke="#181410" stroke-width="3"/>
+            <path d="M0,-13 L3.8,-4 13,-4 5.5,2.2 8.5,11 0,5.5 -8.5,11 -5.5,2.2 -13,-4 -3.8,-4 Z" fill="#181410"/>
+          </g>
+        </svg>
+        <div class="map-legend">
+          <span class="lg"><span class="swatch" style="background:var(--gold)"></span> Your home</span>
+          <span class="lg"><span class="swatch" style="background:var(--power)"></span> Hasn't voted since 2018</span>
+          <span class="lg"><span class="swatch" style="background:var(--green)"></span> Presidential years only</span>
+        </div>
+      </div>
+      <div class="rise d2">
+        <span class="micro">The keystone</span>
+        <h2 style="margin:.7rem 0 1.2rem;">A map turns "get out the vote" into a short walk.</h2>
+        <p>A captain doesn't face an abstract duty. They see twelve dots within a five-minute walk -- real neighbors, color-coded by how long they've been missing. Reaching five of them is a good week, and the map makes that finite.</p>
+        <p>Their own home is the star. The work starts there and spreads outward, one porch at a time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== WHY IT WINS (dark) ===================== -->
+<section class="dark" id="why">
+  <div class="wrap reveal">
+    <div class="sec-head rise">
+      <span class="micro">Why it wins</span>
+      <h2>A fraction of the cost of paid field -- and it runs anywhere.</h2>
+    </div>
+    <p class="rise">Paid canvassing runs dollars per door and needs staff in every county. Block Power replaces paid canvassers with volunteer super-voter captains recruited by mail, and replaces cash stipends with a points leaderboard. Mail is the only channel that reaches all 100 counties with no field office -- so the whole program can be run remotely, by the people who actually live there.</p>
+    <div class="hero-stats" style="border-top-color:rgba(255,255,255,.2);">
+      <div class="stat rise d1"><div class="num">10-30</div><div class="lab">captains recruited per 1,000 postcards mailed</div></div>
+      <div class="stat rise d2"><div class="num">180-720</div><div class="lab">neighbors reached once those captains get to work</div></div>
+      <div class="stat rise d3"><div class="num">tens</div><div class="lab">of dollars per net new voter at scale -- not hundreds</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PROOF ===================== -->
+<section id="proof">
+  <div class="wrap reveal">
+    <div class="sec-head rise">
+      <span class="micro">Proof · the Halifax pilot</span>
+      <h2>We test before we scale.</h2>
+    </div>
+    <p class="rise">Before taking this statewide, we ran the model in Halifax County to measure the real conversion rate -- not a projection. We mailed every super-voter in four majority-Black precincts, held a fifth as a no-mail control, and tracked the whole chain: postcard, opt-in, captain activation, neighbors reached, plans made, ballots cast.</p>
+    <div class="steps" style="margin-top:1rem;">
+      <div class="step rise d1"><div class="k">171</div><h3>postcards</h3><p>mailed to every super-voter in Enfield 1 &amp; 2, Weldon 1-2, and Ringwood.</p></div>
+      <div class="step rise d2"><div class="k">4</div><h3>treatment precincts</h3><p>majority-Black, high-need, chosen from the voter file -- not from a hunch.</p></div>
+      <div class="step rise d3"><div class="k">1</div><h3>control</h3><p>Scotland Neck held with no mail, so the lift we measure is real.</p></div>
+      <div class="step rise d4"><div class="k">Nov</div><h3>2026 results</h3><p>turnout pulled from the voter file after Election Day. Numbers, not promises.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HEALTH WEALTH POWER ===================== -->
+<section class="green-sec" id="power">
+  <div class="wrap reveal">
+    <div class="sec-head rise">
+      <span class="micro">The bigger project</span>
+      <h2>Health. Wealth. Power.</h2>
+      <p style="margin-top:1rem;">Turnout is where we start, because power is what protects everything else. The same neighbor networks that win an election can lower a block's blood pressure, move a dollar, and keep a community organized long after the votes are counted.</p>
+    </div>
+    <div class="pillars">
+      <div class="pillar rise d1"><div class="ic">Health</div><h3>Well neighbors</h3><p>The trusted relationships that move people to the polls are the same ones that move them to the clinic, the checkup, the harder conversation.</p></div>
+      <div class="pillar rise d2"><div class="ic">Wealth</div><h3>Dollars that stay</h3><p>Organized blocks keep money circulating close to home and put it behind the people and businesses that hire their own.</p></div>
+      <div class="pillar rise d3"><div class="ic">Power</div><h3>Seats and say</h3><p>When the same people turn out every cycle, the school board, the county, and the statehouse start answering the phone. That is the whole point.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== GET INVOLVED (dark) ===================== -->
+<section class="dark" id="join">
+  <div class="wrap reveal">
+    <div class="sec-head rise">
+      <span class="micro">Get involved</span>
+      <h2>Pick your block.</h2>
+    </div>
+    <div class="involve">
+      <div class="card rise d1">
+        <h3>Become a captain</h3>
+        <p>You vote in every election. That makes you the right person to make sure your neighbors do too. We'll send you a free Strategy Pack and a map of your own precinct. You set the pace.</p>
+        <a class="btn" href="https://husb.link/myblock" target="_blank" rel="noopener">Get your Strategy Pack <span class="arrow">→</span></a>
+      </div>
+      <div class="card rise d2" id="fund">
+        <h3>Fund the work</h3>
+        <p>For about the cost of a few weeks of one paid canvass team, we can stand up a measured turnout program across an entire region -- run by the neighbors people already trust.</p>
+        <a class="btn" href="#contact">Donate <span class="arrow">→</span></a>
+      </div>
+      <div class="card rise d3">
+        <h3>Partner</h3>
+        <p>Unions, churches, civic groups, candidates building for the long haul -- Block Power plugs the relational model into the organizing you already do.</p>
+        <a class="btn ghost" style="border-color:var(--paper); color:var(--paper);" href="#contact">Start a conversation <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer id="contact">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="#top" style="margin-bottom:1rem;">
+          <span class="mark">B</span><span class="name" style="font-size:1.5rem;">Block Power</span>
+        </a>
+        <p style="color:#d8cdb9; max-width:42ch; margin-top:1rem;">Building Black political power, one block at a time. Real maps, trusted neighbors, measured results.</p>
+      </div>
+      <div class="foot-links">
+        <a href="#how">How it works</a>
+        <a href="#proof">Proof</a>
+        <a href="#power">Health, wealth, power</a>
+        <a href="#join">Get involved</a>
+      </div>
+    </div>
+    <p class="legal">
+      Block Power builds civic power in traditionally marginalized communities through neighbor-to-neighbor organizing. Block Power is a 501(c)(4) social-welfare organization; contributions are not tax-deductible as charitable gifts. Get-out-the-vote education and nonpartisan voter services are carried out through our 501(c)(3) partner, Hub3 Inc. We never share your information with a campaign or party.
+      <br /><br />
+      © 2026 Block Power · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#contact">Contact</a>
+    </p>
+  </div>
+</footer>
+
+<script>
+  // scroll reveal
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('show'); obs.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(function(el){ obs.observe(el); });
+
+  // close mobile nav on link click
+  document.querySelectorAll('#navlinks a').forEach(function(a){
+    a.addEventListener('click', function(){ document.getElementById('navlinks').classList.remove('open'); });
+  });
+</script>
+</body>
+</html>
