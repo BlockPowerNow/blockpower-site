@@ -30,6 +30,10 @@ EXPECTED_CHOICES = {
     "in_north_carolina": ["nc_yes", "nc_no"],
 }
 
+EXPECTED_ENDINGS = ["ty_nc", "ty_other"]
+
+EXPECTED_LOGIC_REFS = ("housing_type", "doors_count", "in_north_carolina")
+
 
 def fail(problems: list[str], message: str) -> None:
     problems.append(message)
@@ -91,16 +95,25 @@ def main() -> int:
         if "state" in sub_by_ref:
             fail(problems, "address group must not ask for state -- NC is already known")
 
-    # Two endings, NC one first (first screen is the default fallthrough)
+    # Exactly two endings, NC one first (first screen is the default fallthrough)
     endings = [t["ref"] for t in form.get("thankyou_screens", [])]
-    if endings[:2] != ["ty_nc", "ty_other"]:
-        fail(problems, f"expected endings ['ty_nc','ty_other'] in that order, got {endings}")
+    if endings != EXPECTED_ENDINGS:
+        fail(problems, f"expected exactly endings {EXPECTED_ENDINGS} in that order, got {endings}")
 
-    # Logic: three rules, exactly
+    # Logic: three rules, exactly -- no more, no fewer
     logic_by_ref = {rule["ref"]: rule for rule in form.get("logic", [])}
-    for ref in ("housing_type", "doors_count", "in_north_carolina"):
+    for ref in EXPECTED_LOGIC_REFS:
         if ref not in logic_by_ref:
             fail(problems, f"missing logic rule on {ref}")
+    unexpected_logic = [ref for ref in logic_by_ref if ref not in EXPECTED_LOGIC_REFS]
+    if unexpected_logic:
+        fail(problems, f"unexpected logic rule(s): {unexpected_logic}")
+    if len(logic_by_ref) != len(EXPECTED_LOGIC_REFS):
+        fail(
+            problems,
+            f"expected exactly {len(EXPECTED_LOGIC_REFS)} logic rules, "
+            f"got {len(logic_by_ref)}: {sorted(logic_by_ref)}",
+        )
 
     # Building path skips the doors question
     housing = logic_by_ref.get("housing_type")

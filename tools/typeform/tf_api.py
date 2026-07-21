@@ -57,3 +57,5 @@ def api(method: str, path: str, body: dict | None = None) -> dict:
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode()[:500]
         raise RuntimeError(f"{method} {path} -> HTTP {exc.code}: {detail}") from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(f"{method} {path} -> connection failed: {exc.reason}") from exc
