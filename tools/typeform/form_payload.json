@@ -1,0 +1,339 @@
+{
+  "title": "Get your Strategy Pack",
+  "type": "form",
+  "workspace": {
+    "href": "https://api.typeform.com/workspaces/eTZb5R"
+  },
+  "theme": {
+    "href": "https://api.typeform.com/themes/THEME_ID_PLACEHOLDER"
+  },
+  "settings": {
+    "language": "en",
+    "is_public": true,
+    "progress_bar": "proportion",
+    "show_progress_bar": true,
+    "show_typeform_branding": false,
+    "meta": {
+      "allow_indexing": false
+    }
+  },
+  "welcome_screens": [
+    {
+      "ref": "welcome",
+      "title": "Get your Strategy Pack",
+      "properties": {
+        "description": "You vote in every election. That makes you the right person to make sure your neighbors do too. Tell us where you are and how much of your block you want to cover, and we'll mail you a map of your precinct plus a one-page play.\n\nWe're organizing in North Carolina right now. About two minutes.",
+        "show_button": true,
+        "button_text": "Start"
+      }
+    }
+  ],
+  "fields": [
+    {
+      "ref": "housing_type",
+      "title": "Where do you live?",
+      "type": "multiple_choice",
+      "validations": {
+        "required": true
+      },
+      "properties": {
+        "allow_multiple_selection": false,
+        "allow_other_choice": false,
+        "vertical_alignment": true,
+        "choices": [
+          {
+            "ref": "choice_house",
+            "label": "A house or townhouse on a street"
+          },
+          {
+            "ref": "choice_building",
+            "label": "An apartment or condo building"
+          }
+        ]
+      }
+    },
+    {
+      "ref": "doors_count",
+      "title": "About how many doors can you cover?",
+      "type": "multiple_choice",
+      "validations": {
+        "required": true
+      },
+      "properties": {
+        "allow_multiple_selection": false,
+        "allow_other_choice": false,
+        "vertical_alignment": true,
+        "choices": [
+          {
+            "ref": "doors_5",
+            "label": "5 -- my closest neighbors"
+          },
+          {
+            "ref": "doors_10",
+            "label": "10 -- both sides of my street"
+          },
+          {
+            "ref": "doors_50",
+            "label": "50 -- my whole block"
+          }
+        ]
+      }
+    },
+    {
+      "ref": "building_scope",
+      "title": "How much of your building?",
+      "type": "multiple_choice",
+      "validations": {
+        "required": true
+      },
+      "properties": {
+        "allow_multiple_selection": false,
+        "allow_other_choice": false,
+        "vertical_alignment": true,
+        "choices": [
+          {
+            "ref": "floor_only",
+            "label": "Just my floor"
+          },
+          {
+            "ref": "whole_building",
+            "label": "The entire building"
+          }
+        ]
+      }
+    },
+    {
+      "ref": "why_motivation",
+      "title": "Why do you want to do this?",
+      "type": "long_text",
+      "validations": {
+        "required": true
+      },
+      "properties": {
+        "description": "A sentence or two is plenty."
+      }
+    },
+    {
+      "ref": "full_name",
+      "title": "What's your name?",
+      "type": "short_text",
+      "validations": {
+        "required": true
+      },
+      "properties": {}
+    },
+    {
+      "ref": "email_address",
+      "title": "Where should we email you?",
+      "type": "email",
+      "validations": {
+        "required": true
+      },
+      "properties": {
+        "description": "For your confirmation, and a heads-up when your pack ships."
+      }
+    },
+    {
+      "ref": "phone",
+      "title": "Phone number",
+      "type": "phone_number",
+      "validations": {
+        "required": false
+      },
+      "properties": {
+        "description": "Optional. Only if you'd rather we call or text about your precinct.",
+        "default_country_code": "US"
+      }
+    },
+    {
+      "ref": "in_north_carolina",
+      "title": "Are you in North Carolina?",
+      "type": "multiple_choice",
+      "validations": {
+        "required": true
+      },
+      "properties": {
+        "description": "We're only organizing in North Carolina right now.",
+        "allow_multiple_selection": false,
+        "allow_other_choice": false,
+        "vertical_alignment": true,
+        "choices": [
+          {
+            "ref": "nc_yes",
+            "label": "Yes, I'm in North Carolina"
+          },
+          {
+            "ref": "nc_no",
+            "label": "No, I'm somewhere else"
+          }
+        ]
+      }
+    },
+    {
+      "ref": "mailing_address",
+      "title": "Where should we mail your pack?",
+      "type": "group",
+      "properties": {
+        "description": "Your address is how we find your precinct. Your Strategy Pack is mailed by Hub3 Inc., a 501(c)(3) -- signing up here is not a contribution to Block Power. We never share your information with a campaign or party unless you authorize it.",
+        "show_button": true,
+        "button_text": "Send it",
+        "fields": [
+          {
+            "ref": "street",
+            "title": "Street address",
+            "type": "short_text",
+            "validations": {
+              "required": true
+            },
+            "properties": {}
+          },
+          {
+            "ref": "unit",
+            "title": "Apartment or unit",
+            "type": "short_text",
+            "validations": {
+              "required": false
+            },
+            "properties": {}
+          },
+          {
+            "ref": "city",
+            "title": "City",
+            "type": "short_text",
+            "validations": {
+              "required": true
+            },
+            "properties": {}
+          },
+          {
+            "ref": "zip_code",
+            "title": "ZIP code",
+            "type": "short_text",
+            "validations": {
+              "required": true
+            },
+            "properties": {}
+          }
+        ]
+      }
+    }
+  ],
+  "thankyou_screens": [
+    {
+      "ref": "ty_nc",
+      "title": "Thanks -- we've got it.",
+      "type": "thankyou_screen",
+      "properties": {
+        "description": "We'll build your precinct map and mail your Strategy Pack. Watch your email for a confirmation. If anything's wrong with your address, reply to it and we'll fix it.",
+        "show_button": false,
+        "share_icons": false
+      }
+    },
+    {
+      "ref": "ty_other",
+      "title": "Thanks for signing up.",
+      "type": "thankyou_screen",
+      "properties": {
+        "description": "We're only organizing in North Carolina right now, so we can't build your precinct map yet. We'll hold your details and email you when we reach your state.",
+        "show_button": false,
+        "share_icons": false
+      }
+    }
+  ],
+  "logic": [
+    {
+      "type": "field",
+      "ref": "housing_type",
+      "actions": [
+        {
+          "action": "jump",
+          "condition": {
+            "op": "is",
+            "vars": [
+              {
+                "type": "field",
+                "value": "housing_type"
+              },
+              {
+                "type": "choice",
+                "value": "choice_building"
+              }
+            ]
+          },
+          "details": {
+            "to": {
+              "type": "field",
+              "value": "building_scope"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "field",
+      "ref": "doors_count",
+      "actions": [
+        {
+          "action": "jump",
+          "condition": {
+            "op": "always",
+            "vars": []
+          },
+          "details": {
+            "to": {
+              "type": "field",
+              "value": "why_motivation"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "field",
+      "ref": "in_north_carolina",
+      "actions": [
+        {
+          "action": "jump",
+          "condition": {
+            "op": "is",
+            "vars": [
+              {
+                "type": "field",
+                "value": "in_north_carolina"
+              },
+              {
+                "type": "choice",
+                "value": "nc_no"
+              }
+            ]
+          },
+          "details": {
+            "to": {
+              "type": "thankyou",
+              "value": "ty_other"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "field",
+      "ref": "mailing_address",
+      "actions": [
+        {
+          "action": "jump",
+          "condition": {
+            "op": "always",
+            "vars": []
+          },
+          "details": {
+            "to": {
+              "type": "thankyou",
+              "value": "ty_nc"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

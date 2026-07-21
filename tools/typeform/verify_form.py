@@ -30,9 +30,20 @@ EXPECTED_CHOICES = {
     "in_north_carolina": ["nc_yes", "nc_no"],
 }
 
-EXPECTED_ENDINGS = ["ty_nc", "ty_other"]
+# Typeform injects its own "default_tys" fallback ending on every form --
+# the unrelated production form sS3FFNdl carries one too. It cannot be
+# suppressed via the Create API, so we assert it exactly rather than
+# ignoring extras: any OTHER stray ending still fails.
+EXPECTED_ENDINGS = ["ty_nc", "ty_other", "default_tys"]
 
-EXPECTED_LOGIC_REFS = ("housing_type", "doors_count", "in_north_carolina")
+EXPECTED_LOGIC_REFS = (
+    "housing_type",
+    "doors_count",
+    "in_north_carolina",
+    # Terminates the NC path explicitly AFTER the address group. Without
+    # it Typeform injects its own "default_tys" ending with generic copy.
+    "mailing_address",
+)
 
 
 def fail(problems: list[str], message: str) -> None:

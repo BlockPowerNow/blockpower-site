@@ -156,9 +156,20 @@ EXPECTED_CHOICES = {
     "in_north_carolina": ["nc_yes", "nc_no"],
 }
 
-EXPECTED_ENDINGS = ["ty_nc", "ty_other"]
+# Typeform injects its own "default_tys" fallback ending on every form --
+# the unrelated production form sS3FFNdl carries one too. It cannot be
+# suppressed via the Create API, so we assert it exactly rather than
+# ignoring extras: any OTHER stray ending still fails.
+EXPECTED_ENDINGS = ["ty_nc", "ty_other", "default_tys"]
 
-EXPECTED_LOGIC_REFS = ("housing_type", "doors_count", "in_north_carolina")
+EXPECTED_LOGIC_REFS = (
+    "housing_type",
+    "doors_count",
+    "in_north_carolina",
+    # Terminates the NC path explicitly AFTER the address group. Without
+    # it Typeform injects its own "default_tys" ending with generic copy.
+    "mailing_address",
+)
 
 
 def fail(problems: list[str], message: str) -> None:
@@ -434,15 +445,21 @@ Create `tools/typeform/form_payload.json`. Copy is verbatim from the spec. `THEM
 {
   "title": "Get your Strategy Pack",
   "type": "form",
-  "workspace": { "href": "https://api.typeform.com/workspaces/eTZb5R" },
-  "theme": { "href": "https://api.typeform.com/themes/THEME_ID_PLACEHOLDER" },
+  "workspace": {
+    "href": "https://api.typeform.com/workspaces/eTZb5R"
+  },
+  "theme": {
+    "href": "https://api.typeform.com/themes/THEME_ID_PLACEHOLDER"
+  },
   "settings": {
     "language": "en",
     "is_public": true,
     "progress_bar": "proportion",
     "show_progress_bar": true,
     "show_typeform_branding": false,
-    "meta": { "allow_indexing": false }
+    "meta": {
+      "allow_indexing": false
+    }
   },
   "welcome_screens": [
     {
@@ -460,14 +477,22 @@ Create `tools/typeform/form_payload.json`. Copy is verbatim from the spec. `THEM
       "ref": "housing_type",
       "title": "Where do you live?",
       "type": "multiple_choice",
-      "validations": { "required": true },
+      "validations": {
+        "required": true
+      },
       "properties": {
         "allow_multiple_selection": false,
         "allow_other_choice": false,
         "vertical_alignment": true,
         "choices": [
-          { "ref": "choice_house", "label": "A house or townhouse on a street" },
-          { "ref": "choice_building", "label": "An apartment or condo building" }
+          {
+            "ref": "choice_house",
+            "label": "A house or townhouse on a street"
+          },
+          {
+            "ref": "choice_building",
+            "label": "An apartment or condo building"
+          }
         ]
       }
     },
@@ -475,15 +500,26 @@ Create `tools/typeform/form_payload.json`. Copy is verbatim from the spec. `THEM
       "ref": "doors_count",
       "title": "About how many doors can you cover?",
       "type": "multiple_choice",
-      "validations": { "required": true },
+      "validations": {
+        "required": true
+      },
       "properties": {
         "allow_multiple_selection": false,
         "allow_other_choice": false,
         "vertical_alignment": true,
         "choices": [
-          { "ref": "doors_5", "label": "5 -- my closest neighbors" },
-          { "ref": "doors_10", "label": "10 -- both sides of my street" },
-          { "ref": "doors_50", "label": "50 -- my whole block" }
+          {
+            "ref": "doors_5",
+            "label": "5 -- my closest neighbors"
+          },
+          {
+            "ref": "doors_10",
+            "label": "10 -- both sides of my street"
+          },
+          {
+            "ref": "doors_50",
+            "label": "50 -- my whole block"
+          }
         ]
       }
     },
@@ -491,14 +527,22 @@ Create `tools/typeform/form_payload.json`. Copy is verbatim from the spec. `THEM
       "ref": "building_scope",
       "title": "How much of your building?",
       "type": "multiple_choice",
-      "validations": { "required": true },
+      "validations": {
+        "required": true
+      },
       "properties": {
         "allow_multiple_selection": false,
         "allow_other_choice": false,
         "vertical_alignment": true,
         "choices": [
-          { "ref": "floor_only", "label": "Just my floor" },
-          { "ref": "whole_building", "label": "The entire building" }
+          {
+            "ref": "floor_only",
+            "label": "Just my floor"
+          },
+          {
+            "ref": "whole_building",
+            "label": "The entire building"
+          }
         ]
       }
     },
@@ -506,28 +550,40 @@ Create `tools/typeform/form_payload.json`. Copy is verbatim from the spec. `THEM
       "ref": "why_motivation",
       "title": "Why do you want to do this?",
       "type": "long_text",
-      "validations": { "required": true },
-      "properties": { "description": "A sentence or two is plenty." }
+      "validations": {
+        "required": true
+      },
+      "properties": {
+        "description": "A sentence or two is plenty."
+      }
     },
     {
       "ref": "full_name",
       "title": "What's your name?",
       "type": "short_text",
-      "validations": { "required": true },
+      "validations": {
+        "required": true
+      },
       "properties": {}
     },
     {
       "ref": "email_address",
       "title": "Where should we email you?",
       "type": "email",
-      "validations": { "required": true },
-      "properties": { "description": "For your confirmation, and a heads-up when your pack ships." }
+      "validations": {
+        "required": true
+      },
+      "properties": {
+        "description": "For your confirmation, and a heads-up when your pack ships."
+      }
     },
     {
       "ref": "phone",
       "title": "Phone number",
       "type": "phone_number",
-      "validations": { "required": false },
+      "validations": {
+        "required": false
+      },
       "properties": {
         "description": "Optional. Only if you'd rather we call or text about your precinct.",
         "default_country_code": "US"
@@ -537,15 +593,23 @@ Create `tools/typeform/form_payload.json`. Copy is verbatim from the spec. `THEM
       "ref": "in_north_carolina",
       "title": "Are you in North Carolina?",
       "type": "multiple_choice",
-      "validations": { "required": true },
+      "validations": {
+        "required": true
+      },
       "properties": {
         "description": "We're only organizing in North Carolina right now.",
         "allow_multiple_selection": false,
         "allow_other_choice": false,
         "vertical_alignment": true,
         "choices": [
-          { "ref": "nc_yes", "label": "Yes, I'm in North Carolina" },
-          { "ref": "nc_no", "label": "No, I'm somewhere else" }
+          {
+            "ref": "nc_yes",
+            "label": "Yes, I'm in North Carolina"
+          },
+          {
+            "ref": "nc_no",
+            "label": "No, I'm somewhere else"
+          }
         ]
       }
     },
@@ -562,28 +626,36 @@ Create `tools/typeform/form_payload.json`. Copy is verbatim from the spec. `THEM
             "ref": "street",
             "title": "Street address",
             "type": "short_text",
-            "validations": { "required": true },
+            "validations": {
+              "required": true
+            },
             "properties": {}
           },
           {
             "ref": "unit",
             "title": "Apartment or unit",
             "type": "short_text",
-            "validations": { "required": false },
+            "validations": {
+              "required": false
+            },
             "properties": {}
           },
           {
             "ref": "city",
             "title": "City",
             "type": "short_text",
-            "validations": { "required": true },
+            "validations": {
+              "required": true
+            },
             "properties": {}
           },
           {
             "ref": "zip_code",
             "title": "ZIP code",
             "type": "short_text",
-            "validations": { "required": true },
+            "validations": {
+              "required": true
+            },
             "properties": {}
           }
         ]
@@ -622,11 +694,22 @@ Create `tools/typeform/form_payload.json`. Copy is verbatim from the spec. `THEM
           "condition": {
             "op": "is",
             "vars": [
-              { "type": "field", "value": "housing_type" },
-              { "type": "choice", "value": "choice_building" }
+              {
+                "type": "field",
+                "value": "housing_type"
+              },
+              {
+                "type": "choice",
+                "value": "choice_building"
+              }
             ]
           },
-          "details": { "to": { "type": "field", "value": "building_scope" } }
+          "details": {
+            "to": {
+              "type": "field",
+              "value": "building_scope"
+            }
+          }
         }
       ]
     },
@@ -636,8 +719,16 @@ Create `tools/typeform/form_payload.json`. Copy is verbatim from the spec. `THEM
       "actions": [
         {
           "action": "jump",
-          "condition": { "op": "always", "vars": [] },
-          "details": { "to": { "type": "field", "value": "why_motivation" } }
+          "condition": {
+            "op": "always",
+            "vars": []
+          },
+          "details": {
+            "to": {
+              "type": "field",
+              "value": "why_motivation"
+            }
+          }
         }
       ]
     },
@@ -650,11 +741,41 @@ Create `tools/typeform/form_payload.json`. Copy is verbatim from the spec. `THEM
           "condition": {
             "op": "is",
             "vars": [
-              { "type": "field", "value": "in_north_carolina" },
-              { "type": "choice", "value": "nc_no" }
+              {
+                "type": "field",
+                "value": "in_north_carolina"
+              },
+              {
+                "type": "choice",
+                "value": "nc_no"
+              }
             ]
           },
-          "details": { "to": { "type": "thankyou", "value": "ty_other" } }
+          "details": {
+            "to": {
+              "type": "thankyou",
+              "value": "ty_other"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "field",
+      "ref": "mailing_address",
+      "actions": [
+        {
+          "action": "jump",
+          "condition": {
+            "op": "always",
+            "vars": []
+          },
+          "details": {
+            "to": {
+              "type": "thankyou",
+              "value": "ty_nc"
+            }
+          }
         }
       ]
     }
