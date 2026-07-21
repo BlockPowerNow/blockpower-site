@@ -1,0 +1,11 @@
+{
+  "name": "Block Power",
+  "font": "Libre Franklin",
+  "colors": {
+    "question": "#181410",
+    "answer": "#15453a",
+    "button": "#df3b29",
+    "background": "#f6efe0"
+  },
+  "has_transparent_button": false
+}
