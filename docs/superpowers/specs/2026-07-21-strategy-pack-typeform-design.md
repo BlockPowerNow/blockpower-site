@@ -152,8 +152,9 @@ The host is the account's own subdomain, not the generic `form.typeform.com`
 -- read it from `_links.display` on the create response rather than assuming
 a fixed host.
 
-Plus `<script src="//embed.typeform.com/next/embed.js"></script>` before the
-closing `</body>` tag.
+Plus `<script src="https://embed.typeform.com/next/embed.js"></script>` before
+the closing `</body>` tag. Explicit `https:` rather than a protocol-relative
+`//`, so the page also behaves when opened directly from disk.
 
 The `href` stays real. If the Typeform script fails to load or is blocked, the
 button still opens the hosted form in a new tab instead of doing nothing. That
