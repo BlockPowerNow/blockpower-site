@@ -325,6 +325,7 @@ Colors are lifted from the site's CSS custom properties in `index.html` (`--pape
 ```json
 {
   "name": "Block Power",
+  "font": "Libre Franklin",
   "colors": {
     "question": "#181410",
     "answer": "#15453a",
@@ -334,6 +335,11 @@ Colors are lifted from the site's CSS custom properties in `index.html` (`--pape
   "has_transparent_button": false
 }
 ```
+
+`font` is required -- the API returns HTTP 400 without it. "Libre Franklin" is
+the site's own body typeface, taken from the `font-family` on `body` in
+`index.html`, so the form matches the page rather than introducing a third
+typeface.
 
 - [ ] **Step 2: Write the theme creation script**
 
