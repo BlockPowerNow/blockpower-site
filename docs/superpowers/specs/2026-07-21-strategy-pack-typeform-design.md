@@ -80,37 +80,57 @@ completions; opening with a one-tap choice does not.
 7. **Phone number** (phone_number, optional)
    Helper: "Only if you'd rather we call or text about your precinct."
 
-8. **Where should we mail your pack?** (group)
+8. **Are you in North Carolina?** (multiple_choice, required)
+   - Yes, I'm in North Carolina
+   - No, I'm somewhere else
+
+9. **Where should we mail your pack?** (short_text, required)
    Helper: "Your address is how we find your precinct. Your Strategy Pack is
    mailed by Hub3 Inc., a 501(c)(3) -- signing up here is not a contribution to
    Block Power. We never share your information with a campaign or party unless
    you authorize it."
-   - Street address (short_text, required)
-   - Apartment or unit (short_text, optional)
-   - City (short_text, required)
-   - State (dropdown, required) -- all 50 states
-   - ZIP code (short_text, required)
+
+10. **Apartment or unit** (short_text, optional)
+    Helper: "Leave blank if you don't have one."
+
+11. **City** (short_text, required)
+
+12. **ZIP code** (short_text, required)
 
 The Typeform Create API has no native `address` field type. The enum includes
 `contact_info` and `phone_number` but not `address`, so the mailing address is
-an explicit field group. Separate fields also make the CSV export mail-merge
-ready without parsing.
+four standalone fields rather than one composite field. Separate fields also
+make the CSV export mail-merge ready without parsing.
 
-**Ending A -- North Carolina** (State = NC)
+The address was originally built as a Typeform `group` with a state dropdown
+inside it -- that was abandoned during implementation and is the single most
+valuable lesson from this build. Typeform does not enforce
+`validations.required` on subfields inside a `group`: a live test submission
+completed with the entire mailing address blank while the API still reported
+`required: True` on street, city, and zip. Standalone fields enforce
+correctly, so the address became four separate fields, and the state dropdown
+was replaced by a two-choice `in_north_carolina` question asked before the
+address (question 8 above). A `dropdown` field also has no stable per-choice
+`ref`, so routing logic on it would have had to match a string label instead
+of a ref -- another reason to drop it, on top of the required-field bug.
+
+**Ending A -- North Carolina** (answered "Yes, I'm in North Carolina" to
+question 8)
 
 > Thanks -- we've got it. We'll build your precinct map and mail your Strategy
 > Pack. Watch your email for a confirmation. If anything's wrong with your
 > address, reply to it and we'll fix it.
 
-**Ending B -- everywhere else** (State != NC)
+**Ending B -- everywhere else** (answered "No, I'm somewhere else" to
+question 8)
 
 > Thanks for signing up. We're only organizing in North Carolina right now, so we
 > can't build your precinct map yet. We'll hold your details and email you when
 > we reach your state.
 
-Routing on the state field rather than gating up front means an out-of-state
-person still leaves an email address, and gets told the truth instead of a
-confirmation the org cannot honor.
+Routing on the `in_north_carolina` question rather than gating up front means
+an out-of-state person still leaves an email address, and gets told the truth
+instead of a confirmation the org cannot honor.
 
 ## Site change
 
@@ -123,10 +143,14 @@ One file, `index.html`. Line 435 today:
 Becomes:
 
 ```html
-<a class="btn" href="https://form.typeform.com/to/<FORM_ID>"
-   data-tf-popup="<FORM_ID>" data-tf-size="100"
+<a class="btn" href="https://o4ltnhc1g3t.typeform.com/to/yUQCu040"
+   data-tf-popup="yUQCu040" data-tf-size="100"
    target="_blank" rel="noopener">Get your Strategy Pack <span class="arrow">-></span></a>
 ```
+
+The host is the account's own subdomain, not the generic `form.typeform.com`
+-- read it from `_links.display` on the create response rather than assuming
+a fixed host.
 
 Plus `<script src="//embed.typeform.com/next/embed.js"></script>` before the
 closing `</body>` tag.
@@ -174,3 +198,7 @@ will be lost.
 - The stale Typeform tokens in `~/.env~`.
 - Repointing `husb.link/myblock`, which stays broken for anyone who has the old
   link. Worth redirecting it at the new form separately.
+- Self-notification email is configured in the Typeform UI, not in code. It is
+  not covered by `verify_form.py` and will NOT survive a form rebuild from
+  `form_payload.json`. If the form is ever recreated, it must be reconfigured
+  by hand.

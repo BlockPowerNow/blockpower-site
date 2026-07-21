@@ -2,6 +2,7 @@
 
 import json
 import pathlib
+import sys
 
 from tf_api import api
 
@@ -12,6 +13,19 @@ IDS_PATH = HERE / "form_ids.json"
 def main() -> int:
     ids = json.loads(IDS_PATH.read_text())
     theme_id = ids["theme_id"]
+
+    existing_id = ids.get("form_id")
+    if existing_id and "--force" not in sys.argv:
+        try:
+            api("GET", f"/forms/{existing_id}")
+        except RuntimeError as exc:
+            if "HTTP 404" not in str(exc):
+                raise
+        else:
+            print(f"refusing to create a duplicate: form_ids.json already has "
+                  f"form_id {existing_id}, and that form still exists.")
+            print("Delete it first, or re-run with --force to create a new one anyway.")
+            return 1
 
     raw = (HERE / "form_payload.json").read_text()
     payload = json.loads(raw.replace("THEME_ID_PLACEHOLDER", theme_id))

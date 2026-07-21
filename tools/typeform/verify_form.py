@@ -50,6 +50,35 @@ def fail(problems: list[str], message: str) -> None:
     problems.append(message)
 
 
+def _is_choice_condition(condition: dict, field_ref: str, choice_ref: str) -> bool:
+    """True if condition is `field_ref is choice_ref`."""
+    if condition.get("op") != "is":
+        return False
+    field_var, choice_var = (condition.get("vars") or [{}, {}])[:2] or ({}, {})
+    return (
+        field_var.get("type") == "field" and field_var.get("value") == field_ref
+        and choice_var.get("type") == "choice" and choice_var.get("value") == choice_ref
+    )
+
+
+def _is_always_condition(condition: dict) -> bool:
+    return condition.get("op") == "always"
+
+
+def _find_action(actions: list[dict], predicate) -> dict | None:
+    """Return the first action whose condition satisfies predicate, or None.
+
+    Matching the target alone is not enough -- a rule that jumps to the right
+    place on the WRONG condition would still look correct if only the target
+    were checked. Find the action by its condition first, then check where it
+    goes.
+    """
+    for action in actions:
+        if predicate(action.get("condition", {})):
+            return action
+    return None
+
+
 def main() -> int:
     if len(sys.argv) != 2:
         print("usage: verify_form.py <form_id>")
@@ -96,12 +125,20 @@ def main() -> int:
     if "state" in by_ref:
         fail(problems, "must not ask for state -- NC is already known")
 
-    # Exactly two endings, NC one first (first screen is the default fallthrough)
+    # Settings the form must ship with
+    if form.get("settings", {}).get("is_public") is not True:
+        fail(problems, f"settings.is_public must be true, got {form.get('settings', {}).get('is_public')}")
+    theme_href = form.get("theme", {}).get("href", "")
+    if not theme_href.endswith("yOsTRgUW"):
+        fail(problems, f"theme href must end with yOsTRgUW, got {theme_href!r}")
+
+    # Exactly three endings (NC, other, and Typeform's own default_tys),
+    # NC one first (first screen is the default fallthrough)
     endings = [t["ref"] for t in form.get("thankyou_screens", [])]
     if endings != EXPECTED_ENDINGS:
         fail(problems, f"expected exactly endings {EXPECTED_ENDINGS} in that order, got {endings}")
 
-    # Logic: three rules, exactly -- no more, no fewer
+    # Logic: four rules, exactly -- no more, no fewer
     logic_by_ref = {rule["ref"]: rule for rule in form.get("logic", [])}
     for ref in EXPECTED_LOGIC_REFS:
         if ref not in logic_by_ref:
@@ -116,26 +153,45 @@ def main() -> int:
             f"got {len(logic_by_ref)}: {sorted(logic_by_ref)}",
         )
 
-    # Building path skips the doors question
+    # Building path skips the doors question -- jump must fire ON choice_building
     housing = logic_by_ref.get("housing_type")
     if housing:
-        targets = [a["details"]["to"]["value"] for a in housing["actions"]]
-        if "building_scope" not in targets:
-            fail(problems, f"housing_type must jump to building_scope; targets={targets}")
+        action = _find_action(
+            housing["actions"], lambda c: _is_choice_condition(c, "housing_type", "choice_building")
+        )
+        if action is None:
+            fail(problems, f"housing_type must jump to building_scope when choice_building is picked; actions={housing['actions']}")
+        elif action["details"]["to"]["value"] != "building_scope":
+            fail(problems, f"housing_type/choice_building must jump to building_scope, got {action['details']['to']['value']}")
 
-    # House path skips the building question
+    # House path skips the building question -- jump is unconditional
     doors = logic_by_ref.get("doors_count")
     if doors:
-        targets = [a["details"]["to"]["value"] for a in doors["actions"]]
-        if "why_motivation" not in targets:
-            fail(problems, f"doors_count must jump to why_motivation; targets={targets}")
+        action = _find_action(doors["actions"], _is_always_condition)
+        if action is None:
+            fail(problems, f"doors_count must jump to why_motivation unconditionally (op=always); actions={doors['actions']}")
+        elif action["details"]["to"]["value"] != "why_motivation":
+            fail(problems, f"doors_count's unconditional jump must target why_motivation, got {action['details']['to']['value']}")
 
-    # Non-NC routes to the other ending
+    # Non-NC routes to the other ending -- jump must fire ON nc_no
     nc = logic_by_ref.get("in_north_carolina")
     if nc:
-        targets = [a["details"]["to"]["value"] for a in nc["actions"]]
-        if "ty_other" not in targets:
-            fail(problems, f"in_north_carolina must jump to ty_other; targets={targets}")
+        action = _find_action(
+            nc["actions"], lambda c: _is_choice_condition(c, "in_north_carolina", "nc_no")
+        )
+        if action is None:
+            fail(problems, f"in_north_carolina must jump to ty_other when nc_no is picked; actions={nc['actions']}")
+        elif action["details"]["to"]["value"] != "ty_other":
+            fail(problems, f"in_north_carolina/nc_no must jump to ty_other, got {action['details']['to']['value']}")
+
+    # NC path terminates on the last address question -- jump is unconditional
+    zip_rule = logic_by_ref.get("zip_code")
+    if zip_rule:
+        action = _find_action(zip_rule["actions"], _is_always_condition)
+        if action is None:
+            fail(problems, f"zip_code must jump to ty_nc unconditionally (op=always); actions={zip_rule['actions']}")
+        elif action["details"]["to"]["value"] != "ty_nc":
+            fail(problems, f"zip_code's unconditional jump must target ty_nc, got {action['details']['to']['value']}")
 
     # Copy rule: em dashes are banned in Karthik's prose
     blob = str(form)
