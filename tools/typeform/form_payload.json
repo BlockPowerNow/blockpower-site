@@ -170,52 +170,44 @@
       }
     },
     {
-      "ref": "mailing_address",
+      "ref": "street",
       "title": "Where should we mail your pack?",
-      "type": "group",
+      "type": "short_text",
+      "validations": {
+        "required": true
+      },
       "properties": {
-        "description": "Your address is how we find your precinct. Your Strategy Pack is mailed by Hub3 Inc., a 501(c)(3) -- signing up here is not a contribution to Block Power. We never share your information with a campaign or party unless you authorize it.",
-        "show_button": true,
-        "button_text": "Send it",
-        "fields": [
-          {
-            "ref": "street",
-            "title": "Street address",
-            "type": "short_text",
-            "validations": {
-              "required": true
-            },
-            "properties": {}
-          },
-          {
-            "ref": "unit",
-            "title": "Apartment or unit",
-            "type": "short_text",
-            "validations": {
-              "required": false
-            },
-            "properties": {}
-          },
-          {
-            "ref": "city",
-            "title": "City",
-            "type": "short_text",
-            "validations": {
-              "required": true
-            },
-            "properties": {}
-          },
-          {
-            "ref": "zip_code",
-            "title": "ZIP code",
-            "type": "short_text",
-            "validations": {
-              "required": true
-            },
-            "properties": {}
-          }
-        ]
+        "description": "Your address is how we find your precinct. Your Strategy Pack is mailed by Hub3 Inc., a 501(c)(3) -- signing up here is not a contribution to Block Power. We never share your information with a campaign or party unless you authorize it."
       }
+    },
+    {
+      "ref": "unit",
+      "title": "Apartment or unit",
+      "type": "short_text",
+      "validations": {
+        "required": false
+      },
+      "properties": {
+        "description": "Leave blank if you don't have one."
+      }
+    },
+    {
+      "ref": "city",
+      "title": "City",
+      "type": "short_text",
+      "validations": {
+        "required": true
+      },
+      "properties": {}
+    },
+    {
+      "ref": "zip_code",
+      "title": "ZIP code",
+      "type": "short_text",
+      "validations": {
+        "required": true
+      },
+      "properties": {}
     }
   ],
   "thankyou_screens": [
@@ -318,7 +310,7 @@
     },
     {
       "type": "field",
-      "ref": "mailing_address",
+      "ref": "zip_code",
       "actions": [
         {
           "action": "jump",

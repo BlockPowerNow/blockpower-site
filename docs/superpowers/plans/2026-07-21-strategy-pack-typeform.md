@@ -139,10 +139,10 @@ EXPECTED_FIELDS = [
     ("email_address", "email", True),
     ("phone", "phone_number", False),
     ("in_north_carolina", "multiple_choice", True),
-    ("mailing_address", "group", False),
-]
-
-EXPECTED_GROUP_FIELDS = [
+    # Address is four STANDALONE fields, deliberately not a `group`. Typeform
+    # does not enforce validations.required on subfields inside a group -- a
+    # live submission got through with the entire address empty, while the API
+    # still reported required=True on each subfield. Standalone fields enforce.
     ("street", "short_text", True),
     ("unit", "short_text", False),
     ("city", "short_text", True),
@@ -166,9 +166,9 @@ EXPECTED_LOGIC_REFS = (
     "housing_type",
     "doors_count",
     "in_north_carolina",
-    # Terminates the NC path explicitly AFTER the address group. Without
-    # it Typeform injects its own "default_tys" ending with generic copy.
-    "mailing_address",
+    # Terminates the NC path explicitly on the LAST address question. Without
+    # it Typeform routes to its own "default_tys" ending with generic copy.
+    "zip_code",
 )
 
 
@@ -214,23 +214,13 @@ def main() -> int:
         if actual != choice_refs:
             fail(problems, f"{ref}: expected choices {choice_refs}, got {actual}")
 
-    # Address group subfields
-    group = by_ref.get("mailing_address")
-    if group is not None:
-        sub = group.get("properties", {}).get("fields", [])
-        sub_by_ref = {f["ref"]: f for f in sub}
-        for ref, ftype, required in EXPECTED_GROUP_FIELDS:
-            field = sub_by_ref.get(ref)
-            if field is None:
-                fail(problems, f"missing address subfield: {ref}")
-                continue
-            if field["type"] != ftype:
-                fail(problems, f"{ref}: expected type {ftype}, got {field['type']}")
-            actual_required = field.get("validations", {}).get("required", False)
-            if actual_required != required:
-                fail(problems, f"{ref}: expected required={required}, got {actual_required}")
-        if "state" in sub_by_ref:
-            fail(problems, "address group must not ask for state -- NC is already known")
+    # The address must NOT be a question group -- required is unenforced inside
+    # one, which let a live submission through with no address at all.
+    for field in fields:
+        if field.get("type") == "group":
+            fail(problems, f"field {field['ref']} is a group; address fields must be standalone")
+    if "state" in by_ref:
+        fail(problems, "must not ask for state -- NC is already known")
 
     # Exactly two endings, NC one first (first screen is the default fallthrough)
     endings = [t["ref"] for t in form.get("thankyou_screens", [])]
@@ -614,52 +604,44 @@ Create `tools/typeform/form_payload.json`. Copy is verbatim from the spec. `THEM
       }
     },
     {
-      "ref": "mailing_address",
+      "ref": "street",
       "title": "Where should we mail your pack?",
-      "type": "group",
+      "type": "short_text",
+      "validations": {
+        "required": true
+      },
       "properties": {
-        "description": "Your address is how we find your precinct. Your Strategy Pack is mailed by Hub3 Inc., a 501(c)(3) -- signing up here is not a contribution to Block Power. We never share your information with a campaign or party unless you authorize it.",
-        "show_button": true,
-        "button_text": "Send it",
-        "fields": [
-          {
-            "ref": "street",
-            "title": "Street address",
-            "type": "short_text",
-            "validations": {
-              "required": true
-            },
-            "properties": {}
-          },
-          {
-            "ref": "unit",
-            "title": "Apartment or unit",
-            "type": "short_text",
-            "validations": {
-              "required": false
-            },
-            "properties": {}
-          },
-          {
-            "ref": "city",
-            "title": "City",
-            "type": "short_text",
-            "validations": {
-              "required": true
-            },
-            "properties": {}
-          },
-          {
-            "ref": "zip_code",
-            "title": "ZIP code",
-            "type": "short_text",
-            "validations": {
-              "required": true
-            },
-            "properties": {}
-          }
-        ]
+        "description": "Your address is how we find your precinct. Your Strategy Pack is mailed by Hub3 Inc., a 501(c)(3) -- signing up here is not a contribution to Block Power. We never share your information with a campaign or party unless you authorize it."
       }
+    },
+    {
+      "ref": "unit",
+      "title": "Apartment or unit",
+      "type": "short_text",
+      "validations": {
+        "required": false
+      },
+      "properties": {
+        "description": "Leave blank if you don't have one."
+      }
+    },
+    {
+      "ref": "city",
+      "title": "City",
+      "type": "short_text",
+      "validations": {
+        "required": true
+      },
+      "properties": {}
+    },
+    {
+      "ref": "zip_code",
+      "title": "ZIP code",
+      "type": "short_text",
+      "validations": {
+        "required": true
+      },
+      "properties": {}
     }
   ],
   "thankyou_screens": [
@@ -762,7 +744,7 @@ Create `tools/typeform/form_payload.json`. Copy is verbatim from the spec. `THEM
     },
     {
       "type": "field",
-      "ref": "mailing_address",
+      "ref": "zip_code",
       "actions": [
         {
           "action": "jump",
