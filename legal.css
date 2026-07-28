@@ -1,0 +1,122 @@
+/* Shared styles for Block Power legal pages (privacy, terms).
+   Mirrors the tokens and chrome of index.html so these read as native. */
+:root {
+  --paper: #f6efe0;
+  --paper-2: #efe5d2;
+  --ink: #181410;
+  --ink-soft: #463d33;
+  --power: #df3b29;
+  --power-deep: #b22a1c;
+  --green: #15453a;
+  --gold: #e0a02e;
+  --line: #d6c8ad;
+  --max: 820px;
+  --r: 4px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Libre Franklin", system-ui, sans-serif;
+  font-size: 20px;            /* large base for low-vision legibility */
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* paper grain, same as the home page */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+a { color: var(--power-deep); }
+a:hover { color: var(--power); }
+
+.wrap { width: min(var(--max), 92vw); margin: 0 auto; position: relative; z-index: 2; }
+
+/* ---------- nav ---------- */
+header.nav {
+  position: sticky; top: 0; z-index: 40;
+  background: rgba(246,239,224,0.86);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid var(--ink);
+}
+.nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0; }
+.brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; font-weight: 800; color: var(--ink); }
+.brand .mark {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--power); border: 2.5px solid var(--ink);
+  display: grid; place-items: center; color: #fff; font-family: "Fraunces", serif; font-weight: 900;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.brand .name { font-family: "Fraunces", serif; font-weight: 900; font-size: 1.35rem; letter-spacing: -0.01em; }
+.nav-back { text-decoration: none; font-weight: 600; font-size: 1rem; color: var(--ink); }
+.nav-back:hover { color: var(--power-deep); }
+
+/* ---------- document ---------- */
+main { padding: 3.2rem 0 4rem; }
+.doc-head { border-bottom: 2px solid var(--ink); padding-bottom: 1.4rem; margin-bottom: 2.2rem; }
+.micro {
+  font-size: 0.82rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--power-deep);
+}
+h1 {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-size: clamp(2.1rem, 5vw, 3.1rem);
+  margin: 0.5rem 0 0.6rem;
+}
+.updated { color: var(--ink-soft); font-size: 0.95rem; margin: 0; }
+h2 {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(1.35rem, 3vw, 1.7rem);
+  letter-spacing: -0.01em;
+  margin: 2.4rem 0 0.6rem;
+}
+p, li { color: var(--ink-soft); }
+main p { margin: 0.9rem 0; }
+strong { color: var(--ink); }
+ul { padding-left: 1.3em; }
+li { margin: 0.4rem 0; }
+
+.promise {
+  background: var(--paper-2);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--r);
+  box-shadow: 5px 5px 0 var(--ink);
+  padding: 1.3rem 1.5rem;
+  margin: 2rem 0;
+}
+.promise p { margin: 0; color: var(--ink); font-weight: 500; }
+
+.callout {
+  border-left: 4px solid var(--power);
+  padding: 0.2rem 0 0.2rem 1.1rem;
+  margin: 1.4rem 0;
+}
+
+/* ---------- footer ---------- */
+footer { background: var(--ink); color: var(--paper); padding: 3rem 0 2.4rem; margin-top: 3rem; position: relative; z-index: 2; }
+footer a { color: #d8cdb9; text-decoration: none; }
+footer a:hover { color: var(--gold); }
+.legal { color: #b6ab98; font-size: 0.85rem; line-height: 1.55; margin-top: 1.4rem; }
+
+@media (max-width: 640px) {
+  body { font-size: 19px; }
+}
