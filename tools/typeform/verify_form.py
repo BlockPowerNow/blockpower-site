@@ -125,6 +125,11 @@ def main() -> int:
     if "state" in by_ref:
         fail(problems, "must not ask for state -- NC is already known")
 
+    # Hidden field: the postcard QR passes #invite_id=<code> so a sign-up links
+    # back to the invited voter without matching on name and address.
+    if form.get("hidden") != ["invite_id"]:
+        fail(problems, f"hidden must be ['invite_id'], got {form.get('hidden')}")
+
     # Settings the form must ship with
     if form.get("settings", {}).get("is_public") is not True:
         fail(problems, f"settings.is_public must be true, got {form.get('settings', {}).get('is_public')}")

@@ -17,6 +17,9 @@
       "allow_indexing": false
     }
   },
+  "hidden": [
+    "invite_id"
+  ],
   "welcome_screens": [
     {
       "ref": "welcome",
