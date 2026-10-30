@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Block Power -- Get a packet for your block</title>
+<meta name="robots" content="noindex" />
+<meta name="description" content="A free Block Power packet for your block in North Carolina: a map of the 10 closest homes where a Democrat or an unaffiliated voter has not voted yet, and what to say at the door." />
+<style>
+  /* blockpower.org/block (KB, 2026-10-29). Arial only, large type, high contrast:
+     KB has low vision, and the people this page is for skew older. Colors are
+     index.html's own tokens; every text pair here is at least 7:1 except the
+     white-on-red button (6.5:1). */
+  :root {
+    --paper: #f6efe0;
+    --paper-2: #efe5d2;
+    --ink: #181410;
+    --ink-soft: #463d33;
+    --power-deep: #b22a1c;
+    --green: #15453a;
+    --line: #d6c8ad;
+  }
+  * { box-sizing: border-box; }
+  /* .full-btn sets display:block, which beats the UA's [hidden] rule; without
+     this the button showed (linking nowhere) while the form id was unset. */
+  [hidden] { display: none !important; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 22px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+  a { color: var(--power-deep); }
+  .page { max-width: 760px; margin: 0 auto; padding: 28px 16px 56px; }
+  .brand {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-weight: 700; font-size: 24px; color: var(--ink); text-decoration: none;
+  }
+  .brand .mark {
+    width: 44px; height: 44px; border-radius: 50%; flex: none;
+    background: var(--power-deep); color: #fff; border: 3px solid var(--ink);
+    display: grid; place-items: center; font-size: 24px; font-weight: 700;
+  }
+  h1 { font-size: clamp(34px, 8vw, 52px); line-height: 1.1; margin: 28px 0 18px; }
+  .lede { font-size: 24px; margin: 0 0 12px; }
+  .facts { margin: 18px 0 8px; padding-left: 1.2em; }
+  .facts li { margin: 8px 0; }
+
+  .signup { margin: 32px 0 0; }
+  #form-slot {
+    width: 100%; height: 640px;
+    border: 3px solid var(--ink); border-radius: 8px; background: #fff; overflow: hidden;
+  }
+  .full-btn {
+    display: block; margin: 18px 0 0; padding: 20px 16px; text-align: center;
+    font-size: 24px; font-weight: 700; line-height: 1.2; text-decoration: none;
+    color: #fff; background: var(--power-deep); border: 3px solid var(--ink); border-radius: 8px;
+  }
+  .full-btn:hover, .full-btn:focus { background: var(--ink); color: #fff; }
+  .full-btn:focus-visible { outline: 4px solid var(--green); outline-offset: 3px; }
+
+  .notice {
+    border: 3px solid var(--ink); border-radius: 8px; background: var(--paper-2);
+    padding: 20px; margin: 24px 0 0;
+  }
+  .notice p { margin: 0; }
+
+  .fine {
+    margin-top: 40px; padding-top: 20px; border-top: 3px solid var(--ink);
+    font-size: 19px; color: var(--ink-soft);
+  }
+  .fine p { margin: 0 0 12px; }
+  .disclaimer {
+    display: inline-block; border: 2px solid var(--ink); padding: 10px 14px;
+    color: var(--ink); font-weight: 700;
+  }
+
+  @media (max-width: 480px) {
+    body { font-size: 20px; }
+    .lede { font-size: 22px; }
+    #form-slot { height: 560px; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <a class="brand" href="/"><span class="mark" aria-hidden="true">B</span><span>Block Power</span></a>
+
+  <h1>Get a free Block Power packet for your block</h1>
+  <p class="lede">Block Power works to elect Democrats up and down the ballot in North Carolina.
+    Your packet helps you do that on your own street.</p>
+  <ul class="facts">
+    <li>A map of the 10 homes closest to yours where a Democrat or an unaffiliated voter has not voted yet.</li>
+    <li>A checklist for each door, and a page on what to say.</li>
+    <li>Free. We email it to you as a PDF from karthik@blockpower.vote, usually within a couple of days.</li>
+  </ul>
+
+  <section class="signup" aria-label="Sign up">
+    <div id="form-slot" hidden></div>
+    <a id="full-btn" class="full-btn" href="#" target="_blank" rel="noopener" hidden>Open the sign-up full screen</a>
+    <div id="not-open" class="notice" hidden>
+      <p><strong>The sign-up isn't open yet.</strong> Email
+        <a href="mailto:karthik@blockpower.vote?subject=Block%20Power%20packet">karthik@blockpower.vote</a>
+        with your name and address and we'll build your packet by hand.</p>
+    </div>
+    <noscript>
+      <div class="notice"><p>This sign-up needs JavaScript. Email
+        <a href="mailto:karthik@blockpower.vote?subject=Block%20Power%20packet">karthik@blockpower.vote</a>
+        with your name and address and we'll build your packet by hand.</p></div>
+    </noscript>
+  </section>
+
+  <div class="fine">
+    <p>North Carolina only, for now. The packet uses the public North Carolina voter file.
+      We won't give your information to a campaign or a party unless you tell us to.</p>
+    <p class="disclaimer">Paid for by Block Power (blockpower.org). Not authorized by any candidate or candidate's committee.</p>
+  </div>
+</main>
+
+<script>
+// ======================================================================
+// FORM_ID -- the ONE place the Block Power sign-up form is named.
+// Set it to the Block Power sign-up form's id once that form exists, and run
+// its verifier on this page before deploying. Until then the page shows
+// "the sign-up isn't open yet" and an email address.
+// ======================================================================
+const FORM_ID = 'BP_FORM_ID_PLACEHOLDER';
+
+const TYPEFORM_HOST = 'https://o4ltnhc1g3t.typeform.com/to/';
+
+// Optional list tag:
+// blockpower.org/block#churchlist -> hidden field source=churchlist.
+function readSource() {
+  let raw = location.hash.slice(1);
+  try { raw = decodeURIComponent(raw); } catch (e) {}
+  if (raw.includes('=')) raw = new URLSearchParams(raw).get('source') || '';
+  return raw.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 40);
+}
+
+(function () {
+  const ready = /^[A-Za-z0-9]{6,12}$/.test(FORM_ID);
+  if (!ready) {
+    document.getElementById('not-open').hidden = false;
+    return;
+  }
+  const source = readSource();
+  const slot = document.getElementById('form-slot');
+  slot.hidden = false;
+  slot.setAttribute('data-tf-widget', FORM_ID);
+  slot.setAttribute('data-tf-opacity', '100');
+  slot.setAttribute('data-tf-iframe-props', 'title=Block Power packet sign-up');
+  if (source) slot.setAttribute('data-tf-hidden', 'source=' + source);
+
+  // Full screen is easier to read at large zoom than any embed.
+  const full = document.getElementById('full-btn');
+  full.href = TYPEFORM_HOST + FORM_ID + (source ? '#source=' + source : '');
+  full.hidden = false;
+
+  const s = document.createElement('script');
+  s.src = 'https://embed.typeform.com/next/embed.js';
+  document.body.appendChild(s);
+})();
+</script>
+</body>
+</html>
