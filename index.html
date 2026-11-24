@@ -443,7 +443,7 @@
       <div class="card rise d1">
         <h3>Become a captain</h3>
         <p>You vote in every election. That makes you the right person to make sure your neighbors do too. We'll send you a free Strategy Pack and a map of your own precinct. You set the pace.</p>
-        <a class="btn" href="https://o4ltnhc1g3t.typeform.com/to/yUQCu040" data-tf-popup="yUQCu040" data-tf-size="100" target="_blank" rel="noopener">Get your Strategy Pack <span class="arrow">→</span></a>
+        <a class="btn" href="https://o4ltnhc1g3t.typeform.com/to/yUQCu040" data-tf-popup="yUQCu040" data-tf-size="100" data-tf-on-ready="bpPackOpened" data-tf-on-submit="bpPackSubmitted" target="_blank" rel="noopener">Get your Strategy Pack <span class="arrow">→</span></a>
       </div>
       <div class="card rise d2" id="fund">
         <h3>Fund the work</h3>
@@ -495,6 +495,57 @@
   document.querySelectorAll('#navlinks a').forEach(function(a){
     a.addEventListener('click', function(){ document.getElementById('navlinks').classList.remove('open'); });
   });
+</script>
+<script>
+  // Hotjar events: name the moments worth filtering recordings and funnels by.
+  // Clicks, sections seen and scroll depth only -- never anything a visitor types.
+  (function(){
+    var sent = {};
+    var ev = function(name, once){
+      if (once) { if (sent[name]) return; sent[name] = 1; }
+      try { window.hj('event', name); } catch (e) {}
+    };
+    // Typeform popup callbacks (named in data-tf-on-ready / data-tf-on-submit).
+    window.bpPackOpened = function(){ ev('strategy_pack_form_opened'); };
+    window.bpPackSubmitted = function(){ ev('strategy_pack_submitted'); };
+
+    document.addEventListener('click', function(e){
+      var a = e.target.closest && e.target.closest('a');
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      if (href.indexOf('donate.stripe.com') !== -1) ev('donate_click');
+      else if (href.indexOf('typeform.com') !== -1) ev('strategy_pack_click');
+      else if (href === '#join') ev('captain_cta_click');
+      else if (href === '#fund') ev('fund_cta_click');
+      else if (href === '#contact') ev('contact_cta_click');
+      else if (href.indexOf('mailto:') === 0) ev('email_click');
+      else if (href === '/privacy/' || href === '/terms/') ev('legal_link_click');
+      else if (href.charAt(0) === '#') ev('nav_click_' + href.slice(1).replace(/[^a-z0-9]/gi, ''));
+    }, true);
+
+    // Which parts of the page were actually seen.
+    if ('IntersectionObserver' in window) {
+      var seen = new IntersectionObserver(function(entries){
+        entries.forEach(function(en){
+          if (en.isIntersecting) { ev('section_view_' + en.target.id, true); seen.unobserve(en.target); }
+        });
+      }, { rootMargin: '-45% 0px -45% 0px' });  // fires when the section crosses mid-screen
+      ['gap','insight','how','map','why','proof','power','join','fund','contact'].forEach(function(id){
+        var el = document.getElementById(id); if (el) seen.observe(el);
+      });
+    }
+
+    // Scroll depth and time on page.
+    var marks = [25, 50, 75, 100];
+    window.addEventListener('scroll', function(){
+      var d = document.documentElement;
+      var pct = (window.scrollY + window.innerHeight) / d.scrollHeight * 100;
+      marks.forEach(function(m){ if (pct >= m - 1) ev('scroll_' + m, true); });
+    }, { passive: true });
+    [30, 60, 180].forEach(function(s){
+      setTimeout(function(){ if (!document.hidden) ev('engaged_' + s + 's', true); }, s * 1000);
+    });
+  })();
 </script>
 <script src="https://embed.typeform.com/next/embed.js"></script>
 </body>
